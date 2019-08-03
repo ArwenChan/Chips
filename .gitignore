@@ -2,7 +2,8 @@
 .buildlog
 .pub/
 build/
-packages
+.packages
+
 
 # Or the files created by dart2js.
 *.dart.js
@@ -12,3 +13,15 @@ packages
 
 # Include when developing application packages.
 pubspec.lock
+
+
+# android
+android/local.properties
+
+#ios
+ios/.generated/
+
+# others
+.vscode
+.DS_Store
+.idea
