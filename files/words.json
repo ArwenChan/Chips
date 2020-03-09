@@ -1,0 +1,69 @@
+[
+  {
+    "name": "learned",
+    "from": "english",
+    "updated": true,
+    "words": [
+      {
+        "spelling": "learn",
+        "translations": [
+          ["vt", "学习"],
+          ["adj", "啦啦"]
+        ]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "learn",
+        "translations": [
+          ["vt", "学习"],
+          ["adj", "啦啦"]
+        ]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "learn",
+        "translations": [
+          ["vt", "学习"],
+          ["adj", "啦啦"]
+        ]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "learn",
+        "translations": [
+          ["vt", "学习"],
+          ["adj", "啦啦"]
+        ]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      },
+      {
+        "spelling": "how",
+        "translations": [["adv", "如何"]]
+      }
+    ]
+  }
+]

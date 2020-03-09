@@ -6,7 +6,7 @@ part 'word.g.dart';
 class Word {
   Word({this.spelling});
   String spelling;
-  List transitions;
+  List<List<String>> translations;
 
   factory Word.fromJson(Map<String, dynamic> json) => _$WordFromJson(json);
   Map<String, dynamic> toJson() => _$WordToJson(this);

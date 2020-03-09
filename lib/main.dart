@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         child: Consumer<UserState>(
             builder: (BuildContext context, userState, Widget child) {
           return MaterialApp(
-            theme: ThemeData(primaryColor: Colors.green),
+            theme: ThemeData(primaryColor: Colors.greenAccent[700]),
             home: HomePage(),
             routes: <String, WidgetBuilder>{"login": (context) => LoginPage()},
           );
