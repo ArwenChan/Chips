@@ -1,69 +1,25 @@
-[
-  {
-    "name": "learned",
-    "from": "english",
-    "updated": true,
-    "words": [
-      {
-        "spelling": "learn",
-        "translations": [
-          ["vt", "学习"],
-          ["adj", "啦啦"]
-        ]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "learn",
-        "translations": [
-          ["vt", "学习"],
-          ["adj", "啦啦"]
-        ]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "learn",
-        "translations": [
-          ["vt", "学习"],
-          ["adj", "啦啦"]
-        ]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "learn",
-        "translations": [
-          ["vt", "学习"],
-          ["adj", "啦啦"]
-        ]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      },
-      {
-        "spelling": "how",
-        "translations": [["adv", "如何"]]
-      }
-    ]
+{
+  "words": [
+    {
+      "name": "Welcome",
+      "from": "en",
+      "to": "zh-Hans",
+      "updated": false,
+      "words": [
+        {
+          "word": "hello",
+          "status": "normal",
+          "defs": [{ "pos": "int.", "def": "你好；喂；您好；哈喽" }],
+          "pronunciations": {
+            "BrE": "https://dictionary.blob.core.chinacloudapi.cn/media/audio/george/bf/b1/BFB1169AD46D18FDC9145E494EF4D22B.mp3",
+            "AmE": "https://dictionary.blob.core.chinacloudapi.cn/media/audio/tom/bf/b1/BFB1169AD46D18FDC9145E494EF4D22B.mp3"
+          }
+        }
+      ]
+    }
+  ],
+  "memorized": {
+    "updated": false,
+    "words": []
   }
-]
+}

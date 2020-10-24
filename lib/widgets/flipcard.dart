@@ -8,10 +8,14 @@ class WidgetFlipper extends StatefulWidget {
     Key key,
     this.frontWidget,
     this.backWidget,
+    this.roller,
+    this.whenTap,
   }) : super(key: key);
 
   final Widget frontWidget;
   final Widget backWidget;
+  final ScrollController roller;
+  final VoidCallback whenTap;
 
   @override
   _WidgetFlipperState createState() => _WidgetFlipperState();
@@ -79,7 +83,14 @@ class _WidgetFlipperState extends State<WidgetFlipper>
           child: widget.frontWidget,
         ),
         GestureDetector(
-            onTap: _toggleSide, child: Container(color: Colors.transparent)),
+          onTap: () {
+            _toggleSide();
+            if (!isFrontVisible) {
+              widget.whenTap();
+            }
+          },
+          child: Container(color: Colors.transparent),
+        ),
       ],
     );
   }
@@ -94,11 +105,21 @@ class _WidgetFlipperState extends State<WidgetFlipper>
     }
   }
 
-  void _rollBack(status) {
+  void _rollBack(status) async {
     if (status == AnimationStatus.completed) {
+      final double extent = widget.roller.position.maxScrollExtent;
+      await widget.roller.animateTo(
+        extent,
+        duration: Duration(milliseconds: (extent * 15).floor()),
+        curve: Curves.easeIn,
+      );
       Future.delayed(Duration(seconds: 1), () {
         controller.reverse();
         isFrontVisible = true;
+      });
+      Future.delayed(Duration(milliseconds: 1500), () {
+        widget.roller.animateTo(0,
+            duration: Duration(milliseconds: 10), curve: Curves.linear);
       });
     }
   }

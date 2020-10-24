@@ -1,10 +1,12 @@
-import 'package:dict/common/global.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:dict/models/word.dart';
+import 'package:dict/states.dart';
 import 'package:dict/widgets/list.dart';
 import 'package:dict/widgets/triangle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:dict/routes/home.dart';
+import 'package:provider/provider.dart';
 
 import 'flipcard.dart';
 
@@ -18,62 +20,68 @@ class Item extends StatefulWidget {
   Item({
     Key key,
     @required this.data,
+    @required list,
     @required this.animation,
     @required this.index,
-    this.status: 'normal',
     Function remove,
   })  : this.removeSelf = remove,
-        this.word = data.spelling,
-        this.translations = data.translations,
+        this.dataList = list,
         super(key: key);
 
-  final String word;
-  final List<List<String>> translations;
-  final dynamic data;
+  // final String word;
+  // final List<Map<String, String>> defs;
+  final Word data;
+  final List<Word> dataList;
   final int index;
-  final String status;
   final Animation<double> animation;
   final Function removeSelf;
 
-  @override
-  _ItemState createState() => new _ItemState();
+  List<Map<String, String>> get defs {
+    return data.defs;
+  }
 
-  List<Widget> translationCombined() {
+  String get word {
+    return data.word;
+  }
+
+  bool get statusIsTag {
+    return data.status == 'tag';
+  }
+
+  // memory stands for in memory, it's almost in UI.
+  bool get statusIsMemory {
+    return data.status == 'memory';
+  }
+
+  @override
+  _ItemState createState() => _ItemState();
+
+  Widget translationCombined() {
     List<Widget> unfoldedWidgets = [];
-    for (int i = 0; i < translations.length; i++) {
+    for (int i = 0; i < defs.length; i++) {
       unfoldedWidgets.addAll([
         Text(
-          translations[i][0] + '. ',
+          defs[i]['pos'] + ' ',
           style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[100].withOpacity(0.5)),
+              color: Colors.grey[100].withOpacity(0.6)),
         ),
         Text(
-          '${translations[i][1]}${i == translations.length - 1 ? '' : ', '}',
+          '${defs[i]['def']}${i == defs.length - 1 ? '' : '  '}',
           style: TextStyle(
               fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white),
         )
       ]);
     }
-    return unfoldedWidgets;
-  }
-
-  List<Word> get dataList {
-    return Global.words[Global.wordListIndex].words;
+    return Row(children: unfoldedWidgets);
   }
 }
 
 class _ItemState extends State<Item> {
   double _left = 0;
   double _right = 0;
-  String itemStatus;
-
-  @override
-  void initState() {
-    super.initState();
-    itemStatus = widget.status;
-  }
+  final ScrollController itemRoller = ScrollController(keepScrollOffset: false);
 
   int get rightState {
     if (_right > 0) {
@@ -82,11 +90,9 @@ class _ItemState extends State<Item> {
     return 0;
   }
 
-  HomePageState get homeState =>
-      context.ancestorStateOfType(TypeMatcher<HomePageState>());
+  HomeListState get homeState => context.findAncestorStateOfType();
 
-  WordsState get listState =>
-      context.ancestorStateOfType(TypeMatcher<WordsState>());
+  WordsState get listState => context.findAncestorStateOfType();
 
   Size get screenSize {
     return MediaQuery.of(context).size;
@@ -109,6 +115,7 @@ class _ItemState extends State<Item> {
                 child: GestureDetector(
                   onHorizontalDragUpdate: (DragUpdateDetails details) {
                     final double x = details.delta.dx;
+                    if (homeState.inPull) return;
                     if (x > 0 && _left < leftExtent) {
                       setState(() {
                         _left += x;
@@ -120,35 +127,64 @@ class _ItemState extends State<Item> {
                         _left += x;
                       });
                     }
+                    homeState.inDrag = true;
                   },
                   onHorizontalDragEnd: (DragEndDetails details) {
+                    if (homeState.inPull || !homeState.inDrag) return;
                     if (_left > 0) {
+                      homeState.assetsAudioPlayer.open(
+                        Audio("assets/sounds/finger.mp3"),
+                        volume: 1.0,
+                      );
                       setState(() {
-                        itemStatus = itemStatus == 'tag' ? 'normal' : 'tag';
+                        Provider.of<DataSheet>(context, listen: false)
+                            .dataChangeStatus(widget.index,
+                                widget.statusIsTag ? 'normal' : 'tag');
                         _left = 0;
                         _right = 0;
                       });
                     } else if (_right > 0) {
                       if (_right <= rightExtent[1]) {
+                        homeState.assetsAudioPlayer.open(
+                          Audio("assets/sounds/sou1.mp3"),
+                        );
                         setState(() {
-                          itemStatus = itemStatus == 'grey' ? 'normal' : 'grey';
+                          Provider.of<DataSheet>(context, listen: false)
+                              .dataChangeStatus(widget.index,
+                                  widget.statusIsMemory ? 'normal' : 'memory');
                           _left = 0;
                           _right = 0;
                         });
                       } else {
+                        homeState.assetsAudioPlayer.open(
+                          Audio("assets/sounds/sou2.mp3"),
+                        );
                         _left = 0;
                         _right = 0;
                         widget.removeSelf();
                       }
                     }
+                    homeState.inDrag = false;
                   },
                   child: WidgetFlipper(
+                    roller: itemRoller,
+                    whenTap: () async {
+                      try {
+                        await homeState.assetsAudioPlayer.open(
+                          Audio.network(widget.data.pronunciations[
+                              Provider.of<UserSetting>(context, listen: false)
+                                  .pronunciation]),
+                        );
+                      } catch (t) {
+                        debugPrint(t.toString());
+                      }
+                    },
                     frontWidget: TriangleCorner(
-                      width: itemStatus == 'tag' ? 16 : 0,
+                      width: widget.statusIsTag ? 16 : 0,
                       widget: Container(
                         alignment: Alignment.centerLeft,
                         padding: EdgeInsets.only(left: 20),
-                        color: itemStatus == 'grey'
+                        color: widget.statusIsMemory
                             ? Colors.grey[300]
                             : Colors.white,
                         child: Text(
@@ -156,7 +192,7 @@ class _ItemState extends State<Item> {
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w400,
-                            color: itemStatus == 'grey'
+                            color: widget.statusIsMemory
                                 ? Colors.grey[500]
                                 : Colors.black,
                           ),
@@ -165,10 +201,12 @@ class _ItemState extends State<Item> {
                     ),
                     backWidget: Container(
                       alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(left: 20),
+                      padding: EdgeInsets.fromLTRB(20, 0, 10, 0),
                       color: Theme.of(context).primaryColor,
-                      child: Row(
-                        children: widget.translationCombined(),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: widget.translationCombined(),
+                        controller: itemRoller,
                       ),
                     ),
                   ),
@@ -213,8 +251,6 @@ class _ItemState extends State<Item> {
             ],
           ),
           decoration: BoxDecoration(
-            // border:
-            //     Border(bottom: BorderSide(color: Colors.transparent, width: 1)),
             color: Colors.transparent,
           ),
         ),

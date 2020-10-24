@@ -1,32 +1,34 @@
-import 'package:dict/common/global.dart';
 import 'package:dict/models/word.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:dict/routes/home.dart';
+import 'package:provider/provider.dart';
 
+import '../states.dart';
 import 'item.dart';
 
 class Words extends StatefulWidget {
+  Words({Key key}) : super(key: key);
   @override
   WordsState createState() => WordsState();
 }
 
 class WordsState extends State<Words> {
-  List<Word> data = Global.words[Global.wordListIndex].words;
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  List<Word> data;
+  GlobalKey<AnimatedListState> _listKey;
 
   AnimatedListState get _animatedList => _listKey.currentState;
 
-  HomePageState get homeState =>
-      context.ancestorStateOfType(TypeMatcher<HomePageState>());
+  HomeListState get homeState => context.findAncestorStateOfType();
 
   Widget _buildItem(
       BuildContext context, int index, Animation<double> animation) {
     Word item = data[index];
     return Item(
-        key: ValueKey('$index-${item.spelling}'),
+        key: ValueKey('$index-${item.word}'),
         animation: animation,
         data: item,
+        list: data,
         index: index,
         remove: () {
           _remove(index);
@@ -44,13 +46,14 @@ class WordsState extends State<Words> {
     );
   }
 
-  void _insert(Word newItem) {
-    data.insert(0, newItem);
+  void insert(Word newItem) {
+    Provider.of<DataSheet>(context, listen: false).dataInsert(newItem);
     _animatedList.insertItem(0);
   }
 
   void _remove(int index) {
-    Word removedItem = data.removeAt(index);
+    Word removedItem =
+        Provider.of<DataSheet>(context, listen: false).dataRemove(index);
     if (removedItem != null) {
       _animatedList.removeItem(index,
           (BuildContext context, Animation<double> animation) {
@@ -62,16 +65,16 @@ class WordsState extends State<Words> {
   void move(int currentIndex, int index, Word word) {
     setState(() {
       debugPrint('$currentIndex move before $index');
-      data.removeAt(currentIndex);
-      data.insert(currentIndex > index ? index : index - 1, word);
+      Provider.of<DataSheet>(context, listen: false)
+          .dataMove(currentIndex, index, word);
     });
   }
 
   void moveToLast(int currentIndex, Word word) {
     setState(() {
       debugPrint('$currentIndex move to last');
-      data.removeAt(currentIndex);
-      data.add(word);
+      Provider.of<DataSheet>(context, listen: false)
+          .dataMoveToLast(currentIndex, word);
     });
   }
 
@@ -83,14 +86,16 @@ class WordsState extends State<Words> {
 
   @override
   Widget build(BuildContext context) {
+    data = Provider.of<DataSheet>(context).data;
+    _listKey = Provider.of<DataSheet>(context)
+        .listKeys[Provider.of<DataSheet>(context).dataIndex];
     return Container(
       child: AnimatedList(
         key: _listKey,
         itemBuilder: _buildItem,
-        initialItemCount: 12,
+        initialItemCount: data.length,
         controller: homeState.controller,
       ),
-      color: Colors.black,
     );
   }
 }
