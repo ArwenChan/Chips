@@ -24,6 +24,8 @@ class Global {
   static String deviceInfoString;
   static bool needSave = true;
   static Purchase purchase;
+  static int inDialog = 0;
+  static String latestVersion;
   // static bool canListenCopy = false;
 
   static bool isRelease = bool.fromEnvironment("dart.vm.product");

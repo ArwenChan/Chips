@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dict/common/exception.dart';
+import 'package:dict/common/global.dart';
 import 'package:dict/models/list.dart';
 import 'package:dict/models/user.dart';
 import 'package:dict/models/word.dart';
@@ -11,16 +13,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart';
-
-import 'exception.dart';
-import 'global.dart';
+import 'package:dict/common/constants.dart' show HOST;
 
 const String fileName = 'words.json';
-// const String host = 'https://api.anycoin.site';
-const String host = 'http://192.168.10.102:3000';
 
 Dio dio = Dio(new BaseOptions(
-  baseUrl: host,
+  baseUrl: HOST,
   connectTimeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -39,9 +37,10 @@ void errorHandle(Response response) {
         response.statusCode);
   }
   if (response.statusCode >= 400) {
-    if (response.data == 'Not authorized to access this resource' &&
-        Global.profile.user != null) {
-      UserState().user = null;
+    if (response.data == 'Not authorized to access this resource') {
+      if (Global.profile.user != null) {
+        UserState().user = null;
+      }
       throw CustomException('请登录后继续', 4003);
     } else {
       throw AuthException(response.data, response.statusCode);
@@ -137,7 +136,6 @@ Future<Word> query(String word) async {
     '/query/entozh',
     queryParameters: {'q': word},
   );
-  debugPrint('----receive---');
   errorHandle(response);
   Word w = Word.fromJson(response.data);
   w.status = 'normal';
@@ -147,7 +145,7 @@ Future<Word> query(String word) async {
 Future<User> register(String email, String password) async {
   Response response = await dio.post(
     '/users/',
-    data: {'email': email, 'password': password},
+    data: {'username': email, 'password': password},
   );
   errorHandle(response);
   User user = User.fromJson(response.data['user']);
@@ -155,11 +153,22 @@ Future<User> register(String email, String password) async {
   return user;
 }
 
+Future thirdLogin(String uid, String platform) async {
+  Response response = await dio.post(
+    '/users/thirdlogin',
+    data: {'uid': uid, 'platform': platform},
+  );
+  errorHandle(response);
+  User user = User.fromJson(response.data['user']);
+  user.token = response.data['token'];
+  return {'user': user, 'existed': response.data['existed']};
+}
+
 Future<User> login(String email, String password) async {
   Response response;
   response = await dio.post(
     '/users/login',
-    data: {'email': email, 'password': password},
+    data: {'username': email, 'password': password},
   );
   errorHandle(response);
   User user = User.fromJson(response.data['user']);
@@ -168,7 +177,9 @@ Future<User> login(String email, String password) async {
 }
 
 Future logout() async {
-  if (Global.profile.user == null) return;
+  if (Global.profile.user == null) {
+    throw AuthException('No auth', 400);
+  }
   dio.options.headers['Authorization'] = 'Bearer ${Global.profile.user.token}';
   Response response = await dio.post(
     '/users/logout',
@@ -200,6 +211,7 @@ Future getWords() async {
     );
     errorHandle(response);
     List<WordList> result = response.data.map<WordList>((e) {
+      e['id'] = e['_id'];
       WordList r = WordList.fromJson(e);
       r.updated = true;
       return r;
@@ -223,6 +235,7 @@ Future getMemorized() async {
     errorHandle(response);
     if (response.data is Map) {
       response.data['updated'] = true;
+      response.data['id'] = response.data['_id'];
     }
     return response.data;
   } catch (e) {
@@ -235,6 +248,7 @@ Future<int> verifyPurchase(String receipt) async {
     throw AuthException('No auth', 400);
   }
   dio.options.headers['Authorization'] = 'Bearer ${Global.profile.user.token}';
+  dio.options.connectTimeout = 10000;
   Response response = await dio.post(
     '/purchase/verify',
     data: {
@@ -259,6 +273,23 @@ Future<dynamic> order(String productId) async {
     },
   );
   errorHandle(response);
-  debugPrint(response.data.toString());
+  return response.data;
+}
+
+Future<void> forgetpsw(String email) async {
+  Response response = await dio.get(
+    '/users/forget',
+    queryParameters: {'email': email},
+  );
+  errorHandle(response);
+}
+
+Future<dynamic> getProducts() async {
+  if (Global.profile.user == null) {
+    throw AuthException('No auth', 400);
+  }
+  dio.options.headers['Authorization'] = 'Bearer ${Global.profile.user.token}';
+  Response response = await dio.get('/purchase/products');
+  errorHandle(response);
   return response.data;
 }

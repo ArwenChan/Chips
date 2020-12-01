@@ -12,7 +12,7 @@ import Flutter
     // let rootViewController : FlutterViewController = window?.rootViewController as! FlutterViewController
     // let eventChannel = FlutterEventChannel(name: eventChannelName, binaryMessenger: rootViewController.binaryMessenger)
     // eventChannel.setStreamHandler(handler)    
-
+    // NSLog("userActivity :\(userActivity.webpageURL.description)")
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

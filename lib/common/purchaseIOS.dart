@@ -46,19 +46,13 @@ class PurchaseIOS {
     }
 
     _products = productDetailResponse.productDetails;
-
     final QueryPurchaseDetailsResponse purchaseResponse = await _connection
-        .queryPastPurchases(applicationUserName: Global.profile.user.email);
+        .queryPastPurchases(applicationUserName: Global.profile.user.username);
     if (purchaseResponse.error != null) {
       debugPrint(purchaseResponse.error.message);
       throw CustomException('获取交易记录失败', 1000);
     }
     for (PurchaseDetails purchase in purchaseResponse.pastPurchases) {
-      // TODO: 测试是否没有 verify 的 purchase 会出现在这里
-      // if (await _verifyPurchase(purchase)) {
-      //   continue;
-      // }
-      debugPrint(purchase.toString());
       if (purchase.pendingCompletePurchase) {
         InAppPurchaseConnection.instance.completePurchase(purchase);
       }
@@ -73,75 +67,97 @@ class PurchaseIOS {
       errorMsg = error.details['NSLocalizedDescription'];
     }
     if (context != null) {
-      Navigator.pop(context);
+      closeDialog(context);
       Navigator.pop(context);
       showResultDialog(context, errorMsg);
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pop(context);
+        closeDialog(context);
       });
     }
   }
 
-  Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) async {
+  Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails,
+      {int depth: 0}) async {
     final int validReceipt = await verifyPurchase(
         purchaseDetails.verificationData.serverVerificationData);
     if (validReceipt == 0) {
       return true;
+    } else if (validReceipt == 1) {
+      if (depth < 3) {
+        return await _verifyPurchase(purchaseDetails, depth: depth++);
+      } else {
+        throw CustomException('请稍后再尝试验证', 1000);
+      }
     }
     return false;
   }
 
-  void _handleInvalidPurchase(PurchaseDetails purchaseDetails) {
+  void _handleInvalidPurchase() {
     if (context != null) {
-      Navigator.pop(context);
+      closeDialog(context);
       Navigator.pop(context);
       showResultDialog(context, '收据验证失败');
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pop(context);
+        closeDialog(context);
+      });
+    }
+  }
+
+  void _handleValidPurchase() {
+    if (context != null) {
+      closeDialog(context);
+      Navigator.pop(context);
+      showResultDialog(context, '购买成功', isError: false);
+      Future.delayed(Duration(seconds: 2), () {
+        closeDialog(context);
       });
     }
   }
 
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
     purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
+      debugPrint(purchaseDetails.status.toString());
       if (purchaseDetails.status == PurchaseStatus.pending) {
-        debugPrint('purchase pending');
         if (context == null) {
           _connection.completePurchase(purchaseDetails);
         }
         return;
       }
       if (purchaseDetails.status == PurchaseStatus.error) {
-        debugPrint('purchase error');
         handleError(purchaseDetails.error);
       } else if (purchaseDetails.status == PurchaseStatus.purchased) {
         bool valid;
         try {
           valid = await _verifyPurchase(purchaseDetails);
         } on CustomException catch (e) {
-          Navigator.pop(context);
-          Navigator.pop(context);
-          var errDialog = showResultDialog(context, e.toString());
-          Future.delayed(Duration(seconds: 2), () {
-            Navigator.pop(context, errDialog);
-          });
+          if (context != null) {
+            closeDialog(context);
+            Navigator.pop(context);
+            showResultDialog(context, e.toString());
+            Future.delayed(Duration(seconds: 2), () {
+              closeDialog(context);
+            });
+          }
+          if (e.code == 4006) {
+            if (purchaseDetails.pendingCompletePurchase) {
+              debugPrint('to complete');
+              await _connection.completePurchase(purchaseDetails);
+            }
+          }
           return;
         } catch (e) {
-          Navigator.pop(context);
-          Navigator.pop(context);
-          showToast(context, e.toString(), true);
+          if (context != null) {
+            closeDialog(context);
+            Navigator.pop(context);
+            showToast(context, e.toString(), true);
+          }
           return;
         }
         if (valid) {
           debugPrint('success');
-          Navigator.pop(context);
-          Navigator.pop(context);
-          showResultDialog(context, '购买成功', isError: false);
-          Future.delayed(Duration(seconds: 2), () {
-            Navigator.pop(context);
-          });
+          _handleValidPurchase();
         } else {
-          _handleInvalidPurchase(purchaseDetails);
+          _handleInvalidPurchase();
           return;
         }
       }
@@ -153,12 +169,19 @@ class PurchaseIOS {
   }
 
   void buy() {
-    _connection.buyNonConsumable(
-        purchaseParam: PurchaseParam(
-      productDetails: _products[0],
-      sandboxTesting: !Global.isRelease,
-      applicationUserName: Global.profile.user.email,
-    ));
     showLoadingDialog(context);
+    _connection
+        .buyNonConsumable(
+            purchaseParam: PurchaseParam(
+      productDetails: _products[0],
+      applicationUserName: Global.profile.user.username,
+    ))
+        .catchError((e) {
+      closeDialog(context);
+      Navigator.pop(context);
+      if (e.message.contains('pending')) {
+        showAppleDialog(context, '有未完成的购买，您可以重启应用再继续或重新购买。');
+      }
+    });
   }
 }

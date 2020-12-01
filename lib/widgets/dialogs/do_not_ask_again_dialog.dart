@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dict/common/constants.dart';
+import 'package:dict/common/constants.dart' show kUpdateDialogKeyName;
 
 class DoNotAskAgainDialog extends StatefulWidget {
   final String title, subTitle, positiveButtonText, negativeButtonText;

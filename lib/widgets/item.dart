@@ -27,9 +27,6 @@ class Item extends StatefulWidget {
   })  : this.removeSelf = remove,
         this.dataList = list,
         super(key: key);
-
-  // final String word;
-  // final List<Map<String, String>> defs;
   final Word data;
   final List<Word> dataList;
   final int index;
@@ -81,6 +78,7 @@ class Item extends StatefulWidget {
 class _ItemState extends State<Item> {
   double _left = 0;
   double _right = 0;
+  bool showFront = true;
   final ScrollController itemRoller = ScrollController(keepScrollOffset: false);
 
   int get rightState {
@@ -96,6 +94,14 @@ class _ItemState extends State<Item> {
 
   Size get screenSize {
     return MediaQuery.of(context).size;
+  }
+
+  // for some reason, front text not show after turn back with a roll,
+  // this is a fix.
+  void turnFrontShow() {
+    setState(() {
+      showFront = !showFront;
+    });
   }
 
   @override
@@ -168,6 +174,7 @@ class _ItemState extends State<Item> {
                   },
                   child: WidgetFlipper(
                     roller: itemRoller,
+                    update: turnFrontShow,
                     whenTap: () async {
                       try {
                         await homeState.assetsAudioPlayer.open(
@@ -188,7 +195,7 @@ class _ItemState extends State<Item> {
                             ? Colors.grey[300]
                             : Colors.white,
                         child: Text(
-                          widget.word,
+                          showFront ? widget.word : '',
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w400,

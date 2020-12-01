@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:dict/i10n/localizations.dart';
+import 'package:dict/routes/help.dart';
 import 'package:dict/routes/login.dart';
+import 'package:dict/routes/privacy.dart';
 import 'package:dict/routes/setting.dart';
 import 'package:dict/widgets/dialogs/update_app.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +43,7 @@ class MyApp extends StatelessWidget {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
+    List<String> localeInfo = Platform.localeName.split('_');
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: UserState()),
@@ -57,11 +61,11 @@ class MyApp extends StatelessWidget {
             DefaultLocalizationsDelegate(),
           ],
           supportedLocales: [
-            const Locale('en'), // 美国英语
-            const Locale('zh'), // 中文简体
+            const Locale('en'), // 英语
+            const Locale('zh', 'CN'), // 中文简体
             //其它Locales
           ],
-          locale: const Locale('zh'),
+          locale: Locale(localeInfo.first, localeInfo.last),
           theme: ThemeData(primaryColor: Colors.greenAccent[700]),
           routes: <String, WidgetBuilder>{
             "/": (context) => Consumer2<DataSheet, UserSetting>(builder:
@@ -78,6 +82,8 @@ class MyApp extends StatelessWidget {
                         Widget child) {
                   return SettingPage();
                 }),
+            "privacy": (context) => PrivacyPage(),
+            "help": (context) => HelpPage(),
           },
         );
       }),

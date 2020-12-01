@@ -23,8 +23,8 @@ class UserState extends ProfileChangeNotifier {
   bool get isLogin => user != null;
 
   set user(User user) {
-    if (user?.email != _profile.user?.email) {
-      _profile.lastLogin = _profile.user?.email ?? _profile.lastLogin;
+    if (user?.username != _profile.user?.username) {
+      _profile.lastLogin = _profile.user?.username ?? _profile.lastLogin;
       _profile.user = user;
       notifyListeners();
     }
@@ -123,8 +123,10 @@ class DataSheet extends ChangeNotifier {
 
   // memorized word
   dataRemove(int index) {
-    memorized.insert(
-        0, {'word': data[index].word, 'time': DateTime.now().millisecond});
+    memorized.insert(0, {
+      'word': data[index].word,
+      'time': DateTime.now().millisecondsSinceEpoch
+    });
     Word removedItem = data.removeAt(index);
     Global.words[dataIndex].updated = false;
     Global.memorized['updated'] = false;

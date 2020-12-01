@@ -13,9 +13,7 @@ class DefaultLocalizations {
   //Locale相关值
   String get settings {
     switch (lang) {
-      case 'en':
-        return 'settings';
-      case 'zh':
+      case 'zh_CN':
         return '设置';
       default:
         return 'settings';
@@ -24,9 +22,7 @@ class DefaultLocalizations {
 
   String get translateInPlace {
     switch (lang) {
-      case 'en':
-        return 'TranslateInPlace';
-      case 'zh':
+      case 'zh_CN':
         return '划词查询';
       default:
         return 'TranslateInPlace';
@@ -35,9 +31,7 @@ class DefaultLocalizations {
 
   String get translateInPlaceWithPronunciation {
     switch (lang) {
-      case 'en':
-        return 'TranslateInPlaceWithPronunciation';
-      case 'zh':
+      case 'zh_CN':
         return '划词查询发音';
       default:
         return 'TranslateInPlaceWithPronunciation';
@@ -46,9 +40,7 @@ class DefaultLocalizations {
 
   String get pronunciationType {
     switch (lang) {
-      case 'en':
-        return 'PronunciationType';
-      case 'zh':
+      case 'zh_CN':
         return '发音类型';
       default:
         return 'PronunciationType';
@@ -57,9 +49,7 @@ class DefaultLocalizations {
 
   String get features {
     switch (lang) {
-      case 'en':
-        return 'Features';
-      case 'zh':
+      case 'zh_CN':
         return '功能介绍';
       default:
         return 'Features';
@@ -68,9 +58,7 @@ class DefaultLocalizations {
 
   String get review {
     switch (lang) {
-      case 'en':
-        return 'Review';
-      case 'zh':
+      case 'zh_CN':
         return '去评分';
       default:
         return 'Review';
@@ -79,20 +67,34 @@ class DefaultLocalizations {
 
   String get feedback {
     switch (lang) {
-      case 'en':
-        return 'Feedback';
-      case 'zh':
+      case 'zh_CN':
         return '反馈';
       default:
         return 'Feedback';
     }
   }
 
+  String get share {
+    switch (lang) {
+      case 'zh_CN':
+        return '分享此APP给朋友';
+      default:
+        return 'Share this app';
+    }
+  }
+
+  String get privacy {
+    switch (lang) {
+      case 'zh_CN':
+        return '隐私协议';
+      default:
+        return 'Privacy policy';
+    }
+  }
+
   String get update {
     switch (lang) {
-      case 'en':
-        return 'Update';
-      case 'zh':
+      case 'zh_CN':
         return '更新版本';
       default:
         return 'Update';
@@ -101,23 +103,100 @@ class DefaultLocalizations {
 
   String get logout {
     switch (lang) {
-      case 'en':
-        return 'Logout';
-      case 'zh':
+      case 'zh_CN':
         return '退出登录';
       default:
         return 'Logout';
     }
   }
 
+  String get login {
+    switch (lang) {
+      case 'zh_CN':
+        return '登录';
+      default:
+        return 'Login';
+    }
+  }
+
+  String get signup {
+    switch (lang) {
+      case 'zh_CN':
+        return '注册';
+      default:
+        return 'Sign up';
+    }
+  }
+
+  String get forgetPassword {
+    switch (lang) {
+      case 'zh_CN':
+        return '忘记密码?';
+      default:
+        return 'Forgot password?';
+    }
+  }
+
   String get writeFeedback {
     switch (lang) {
-      case 'en':
-        return 'write your problems here.';
-      case 'zh':
+      case 'zh_CN':
         return '请在后面写下你遇到的问题.';
       default:
         return 'write your problems here.';
+    }
+  }
+
+  String get loading {
+    switch (lang) {
+      case 'zh_CN':
+        return '加载中..';
+      default:
+        return 'loading..';
+    }
+  }
+
+  String get subscribe {
+    switch (lang) {
+      case 'zh_CN':
+        return '订阅';
+      default:
+        return 'Subscribe';
+    }
+  }
+
+  String get confirm {
+    switch (lang) {
+      case 'zh_CN':
+        return '确认';
+      default:
+        return 'Confirm';
+    }
+  }
+
+  String get cancel {
+    switch (lang) {
+      case 'zh_CN':
+        return '取消';
+      default:
+        return 'Cancel';
+    }
+  }
+
+  String get bought {
+    switch (lang) {
+      case 'zh_CN':
+        return '已购';
+      default:
+        return 'Bought';
+    }
+  }
+
+  String get connectionLost {
+    switch (lang) {
+      case 'zh_CN':
+        return '请检查网络连接';
+      default:
+        return 'Internet connection lost';
     }
   }
 }
@@ -134,7 +213,7 @@ class DefaultLocalizationsDelegate
   @override
   Future<DefaultLocalizations> load(Locale locale) {
     return SynchronousFuture<DefaultLocalizations>(
-        DefaultLocalizations(locale.languageCode));
+        DefaultLocalizations('${locale.languageCode}_${locale.countryCode}'));
   }
 
   @override

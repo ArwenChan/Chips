@@ -1,28 +1,61 @@
 import 'dart:io';
 
+import 'package:dict/common/global.dart';
+import 'package:dict/i10n/localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-showLoadingDialog(BuildContext context) async {
+showLoadingDialog(BuildContext context, {String tips: ''}) async {
+  Global.inDialog++;
+  if (tips.isEmpty) {
+    tips = DefaultLocalizations.of(context).loading;
+  } else if (tips.length > 10) {
+    tips = tips.substring(0, 10);
+  }
   return await showDialog(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.transparent,
     builder: (context) {
       return AlertDialog(
-        backgroundColor: Colors.transparent,
-        contentPadding: const EdgeInsets.fromLTRB(120, 0, 120, 0),
-        content: Platform.isAndroid
-            ? CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor))
-            : CupertinoActivityIndicator(radius: 20),
+        insetPadding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.35),
+        backgroundColor: Colors.black87,
+        contentPadding: EdgeInsets.symmetric(vertical: 15),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15))),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              child: Platform.isAndroid
+                  ? CircularProgressIndicator(
+                      valueColor:
+                          new AlwaysStoppedAnimation<Color>(Colors.white70),
+                      strokeWidth: 3,
+                    )
+                  : CupertinoTheme(
+                      data: CupertinoTheme.of(context)
+                          .copyWith(brightness: Brightness.dark),
+                      child: CupertinoActivityIndicator(radius: 17),
+                    ),
+              margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+              height: 20.0,
+              width: 20.0,
+            ),
+            Text(
+              tips,
+              style: TextStyle(fontSize: 18, color: Colors.white70),
+            ),
+          ],
+        ),
       );
     },
   );
 }
 
 showNewListDialog(BuildContext context) async {
+  Global.inDialog++;
   final TextEditingController textController = TextEditingController();
   return await showDialog(
     context: context,
@@ -51,13 +84,14 @@ showNewListDialog(BuildContext context) async {
             child: Text('CANCEL', style: TextStyle(fontSize: 16)),
             textColor: Theme.of(context).primaryColor,
             onPressed: () {
-              Navigator.of(context).pop();
+              closeDialog(context);
             },
           ),
           FlatButton(
             child: Text('OK', style: TextStyle(fontSize: 16)),
             textColor: Theme.of(context).primaryColor,
             onPressed: () {
+              Global.inDialog--;
               Navigator.of(context).pop(textController.text);
             },
           ),
@@ -68,6 +102,7 @@ showNewListDialog(BuildContext context) async {
 }
 
 showDeleteDialog(BuildContext context) async {
+  Global.inDialog++;
   return await showDialog(
     context: context,
     barrierDismissible: false,
@@ -80,6 +115,7 @@ showDeleteDialog(BuildContext context) async {
             child: Text('CANCEL', style: TextStyle(fontSize: 16)),
             textColor: Theme.of(context).primaryColor,
             onPressed: () {
+              Global.inDialog--;
               Navigator.of(context).pop(false);
             },
           ),
@@ -87,6 +123,7 @@ showDeleteDialog(BuildContext context) async {
             child: Text('CONFIRM', style: TextStyle(fontSize: 16)),
             textColor: Theme.of(context).primaryColor,
             onPressed: () {
+              Global.inDialog--;
               Navigator.of(context).pop(true);
             },
           ),
@@ -97,10 +134,15 @@ showDeleteDialog(BuildContext context) async {
 }
 
 showToast(BuildContext context, String tips, bool isError) {
-  Scaffold.of(context).showSnackBar(SnackBar(
-      content: Text(tips),
-      duration: Duration(seconds: 2),
-      backgroundColor: isError ? Colors.red : Colors.green));
+  if (tips.contains('Failed host lookup')) {
+    tips = DefaultLocalizations.of(context).connectionLost;
+  }
+  Scaffold.of(context).showSnackBar(
+    SnackBar(
+        content: Text(tips),
+        duration: Duration(seconds: 2),
+        backgroundColor: isError ? Colors.red : Colors.green),
+  );
 }
 
 showBottom({BuildContext context, List<Widget> list}) async {
@@ -109,13 +151,12 @@ showBottom({BuildContext context, List<Widget> list}) async {
     builder: (BuildContext context) {
       return Container(
         width: double.infinity,
-        height: 100,
-        color: Colors.white70,
+        height: 120,
         child: Center(
           child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: list),
+            mainAxisSize: MainAxisSize.min,
+            children: list,
+          ),
         ),
       );
     },
@@ -124,6 +165,7 @@ showBottom({BuildContext context, List<Widget> list}) async {
 
 showResultDialog(BuildContext context, String tips,
     {bool isError: true}) async {
+  Global.inDialog++;
   return await showDialog(
     context: context,
     barrierDismissible: false,
@@ -131,24 +173,61 @@ showResultDialog(BuildContext context, String tips,
     builder: (context) {
       return AlertDialog(
         backgroundColor: Colors.black87,
-        insetPadding: EdgeInsets.symmetric(horizontal: 90),
+        insetPadding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.2),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(15))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            isError
-                ? Icon(Icons.error, size: 50, color: Colors.white70)
-                : Icon(Icons.done, size: 50, color: Colors.white70),
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 26, 10, 0),
-              child: Text(tips,
-                  style: TextStyle(fontSize: 18, color: Colors.white70)),
-            )
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 16),
+              child: isError
+                  ? Icon(Icons.error, size: 50, color: Colors.white70)
+                  : Icon(Icons.done, size: 50, color: Colors.white70),
+            ),
+            Text(tips, style: TextStyle(fontSize: 18, color: Colors.white70)),
           ],
         ),
-        contentPadding: const EdgeInsets.fromLTRB(15, 30, 15, 30),
+        contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 20),
       );
     },
   );
+}
+
+showAppleDialog(BuildContext context, tips) async {
+  Global.inDialog++;
+  await showDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.transparent,
+    builder: (BuildContext context) {
+      return CupertinoAlertDialog(
+        content: Text(
+          tips,
+          style: TextStyle(fontSize: 16),
+          textAlign: TextAlign.start,
+          strutStyle: StrutStyle(
+            forceStrutHeight: true,
+            height: 2,
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('确认', style: TextStyle(fontSize: 16)),
+            onPressed: () {
+              closeDialog(context);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void closeDialog(BuildContext context, {int level: 0}) {
+  while (Global.inDialog > level) {
+    Navigator.pop(context);
+    Global.inDialog--;
+  }
 }

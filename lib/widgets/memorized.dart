@@ -102,10 +102,10 @@ class MemorizedWordsState extends State<MemorizedWords> {
       return t;
     }).toList();
     DateTime d = DateTime.now();
-    int d2 = d.subtract(Duration(days: d.weekday)).millisecond;
-    int d1 = d.subtract(Duration(days: d.weekday + 7)).millisecond;
-    int m2 = d.subtract(Duration(days: d.day)).millisecond;
-    int m1 = d.subtract(Duration(days: d.day + 30)).millisecond;
+    int d2 = d.subtract(Duration(days: d.weekday)).millisecondsSinceEpoch;
+    int d1 = d.subtract(Duration(days: d.weekday + 7)).millisecondsSinceEpoch;
+    int m2 = d.subtract(Duration(days: d.day)).millisecondsSinceEpoch;
+    int m1 = d.subtract(Duration(days: d.day + 30)).millisecondsSinceEpoch;
     int lastWeek = times.where((v) {
       return v <= d2 && v >= d1;
     }).length;

@@ -9,6 +9,7 @@ class WidgetFlipper extends StatefulWidget {
     this.frontWidget,
     this.backWidget,
     this.roller,
+    this.update,
     this.whenTap,
   }) : super(key: key);
 
@@ -16,6 +17,7 @@ class WidgetFlipper extends StatefulWidget {
   final Widget backWidget;
   final ScrollController roller;
   final VoidCallback whenTap;
+  final VoidCallback update;
 
   @override
   _WidgetFlipperState createState() => _WidgetFlipperState();
@@ -99,27 +101,37 @@ class _WidgetFlipperState extends State<WidgetFlipper>
     if (isFrontVisible) {
       controller.forward();
       isFrontVisible = false;
+      Future.delayed(Duration(milliseconds: 500), () {
+        widget.update();
+      });
     } else {
       controller.reverse();
       isFrontVisible = true;
+      widget.update();
     }
   }
 
   void _rollBack(status) async {
+    // after roll to back, do something and roll back to front
     if (status == AnimationStatus.completed) {
       final double extent = widget.roller.position.maxScrollExtent;
-      await widget.roller.animateTo(
-        extent,
-        duration: Duration(milliseconds: (extent * 15).floor()),
-        curve: Curves.easeIn,
-      );
+      if (extent > 0) {
+        await widget.roller.animateTo(
+          extent,
+          duration: Duration(milliseconds: (extent * 15).floor()),
+          curve: Curves.linear,
+        );
+        Future.delayed(Duration(milliseconds: 1200), () {
+          widget.roller.animateTo(0,
+              duration: Duration(milliseconds: 10), curve: Curves.linear);
+        });
+      }
       Future.delayed(Duration(seconds: 1), () {
-        controller.reverse();
-        isFrontVisible = true;
-      });
-      Future.delayed(Duration(milliseconds: 1500), () {
-        widget.roller.animateTo(0,
-            duration: Duration(milliseconds: 10), curve: Curves.linear);
+        if (!isFrontVisible) {
+          controller.reverse();
+          isFrontVisible = true;
+          widget.update();
+        }
       });
     }
   }

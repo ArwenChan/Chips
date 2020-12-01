@@ -1,5 +1,4 @@
 PODS:
-  - AlipaySDK-iOS (15.7.9)
   - assets_audio_player (0.0.1):
     - Flutter
   - assets_audio_player_web (0.0.1):
@@ -7,10 +6,7 @@ PODS:
   - device_info (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - flutter_alipay (0.0.1):
-    - AlipaySDK-iOS
-    - Flutter
-  - flutter_local_notifications (0.0.1):
+  - flutter_share (0.0.1):
     - Flutter
   - in_app_purchase (0.0.1):
     - Flutter
@@ -22,26 +18,42 @@ PODS:
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
+  - tencent_kit (1.1.2):
+    - Flutter
+    - tencent_kit/vendor (= 1.1.2)
+  - tencent_kit/vendor (1.1.2):
+    - Flutter
   - url_launcher (0.0.1):
     - Flutter
+  - webview_flutter (0.0.1):
+    - Flutter
+  - weibo_kit (1.1.0):
+    - Flutter
+    - weibo_kit/vendor (= 1.1.0)
+  - weibo_kit/vendor (1.1.0):
+    - Flutter
+    - Weibo_SDK (~> 3.2.7)
+  - Weibo_SDK (3.2.7)
 
 DEPENDENCIES:
   - assets_audio_player (from `.symlinks/plugins/assets_audio_player/ios`)
   - assets_audio_player_web (from `.symlinks/plugins/assets_audio_player_web/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - Flutter (from `Flutter`)
-  - flutter_alipay (from `.symlinks/plugins/flutter_alipay/ios`)
-  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - flutter_share (from `.symlinks/plugins/flutter_share/ios`)
   - in_app_purchase (from `.symlinks/plugins/in_app_purchase/ios`)
   - launch_review (from `.symlinks/plugins/launch_review/ios`)
   - package_info (from `.symlinks/plugins/package_info/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
+  - tencent_kit (from `.symlinks/plugins/tencent_kit/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
+  - webview_flutter (from `.symlinks/plugins/webview_flutter/ios`)
+  - weibo_kit (from `.symlinks/plugins/weibo_kit/ios`)
 
 SPEC REPOS:
   trunk:
-    - AlipaySDK-iOS
+    - Weibo_SDK
 
 EXTERNAL SOURCES:
   assets_audio_player:
@@ -52,10 +64,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/device_info/ios"
   Flutter:
     :path: Flutter
-  flutter_alipay:
-    :path: ".symlinks/plugins/flutter_alipay/ios"
-  flutter_local_notifications:
-    :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  flutter_share:
+    :path: ".symlinks/plugins/flutter_share/ios"
   in_app_purchase:
     :path: ".symlinks/plugins/in_app_purchase/ios"
   launch_review:
@@ -66,24 +76,32 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
+  tencent_kit:
+    :path: ".symlinks/plugins/tencent_kit/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
+  webview_flutter:
+    :path: ".symlinks/plugins/webview_flutter/ios"
+  weibo_kit:
+    :path: ".symlinks/plugins/weibo_kit/ios"
 
 SPEC CHECKSUMS:
-  AlipaySDK-iOS: 94ff4c0e17c5e7d126b8207596d5033006534c25
   assets_audio_player: edee322b9cb625571b830b35872ead1a295fd917
   assets_audio_player_web: 19826380c44375761aa0b9053665c1e3fbc3b86b
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_alipay: feedc0200a70b37c2f230b9fc33674f32e272327
-  flutter_local_notifications: 9e4738ce2471c5af910d961a6b7eadcf57c50186
+  flutter_share: 4be0208963c60b537e6255ed2ce1faae61cd9ac2
   in_app_purchase: 3e2155afa9d03d4fa32d9e62d567885080ce97d6
   launch_review: 75d5a956ba8eaa493e9c9d4bf4c05e505e8d5ed0
   package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
+  tencent_kit: 19391606d6432d9e75f50572350acd952a89c28e
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
+  webview_flutter: d2b4d6c66968ad042ad94cbb791f5b72b4678a96
+  weibo_kit: 82a3b5501bbe2ae59528e683a80277079ecc95cb
+  Weibo_SDK: 5a4d08f7e1fedbb635435e4585c8c0439c7da089
 
-PODFILE CHECKSUM: c828106a054d27aae8b2872e20bfd100c5f77425
+PODFILE CHECKSUM: a75497545d4391e2d394c3668e20cfb1c2bbd4aa
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.0

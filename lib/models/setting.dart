@@ -10,7 +10,7 @@ class Setting {
       this.pronunciation});
 
   bool tranlateInplace;
-  // last login username
+  // last login .username
   bool tranlateInplaceWithPronunciation;
   String pronunciation;
 

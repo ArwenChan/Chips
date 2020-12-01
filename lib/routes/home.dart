@@ -7,6 +7,7 @@ import 'package:dict/common/exception.dart';
 import 'package:dict/common/global.dart';
 import 'package:dict/common/api.dart'
     show query, toLocal, update, updateMemorized;
+import 'package:dict/common/subscribe.dart' show subscribe;
 import 'package:dict/models/product.dart';
 import 'package:dict/models/word.dart';
 import 'package:dict/states.dart';
@@ -45,6 +46,7 @@ class DrawerCotainerState extends State<DrawerCotainer> {
   // routes:
   void toRoutes(String route) async {
     var result = await Navigator.pushNamed(context, route);
+    debugPrint('login result: $result');
     if (result == 'remote') {
       Provider.of<DataSheet>(context, listen: false)
           .reloadRemote()
@@ -75,6 +77,7 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
   bool showText = false;
   bool querying = false;
   bool hasSubmit = false;
+  double pullDistance = 0;
   Word queryOut;
   Timer timer;
   String queryWord;
@@ -126,6 +129,7 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
       Global.needSave = false;
       debugPrint('finish to local');
     } else if (state == AppLifecycleState.resumed) {
+      // don't save when it back from inactive to resumed
       Global.needSave = true;
     }
     // else if (state == AppLifecycleState.detached && Global.canListenCopy) {
@@ -219,8 +223,13 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
       if (e.code == 4002) {
         final Product product = Product.fromJson(jsonDecode(e.detail));
         subscribe(product, context);
-      } else {
+      } else if (e.code == 4003) {
         Navigator.pushNamed(context, 'login');
+      } else {
+        showResultDialog(context, e.toString());
+        Future.delayed(Duration(seconds: 2), () {
+          closeDialog(context);
+        });
       }
     } catch (e) {
       showToast(context, e.toString(), true);
@@ -232,21 +241,6 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
     }
     querying = false;
     return out;
-  }
-
-  subscribe(Product product, BuildContext context) async {
-    try {
-      showLoadingDialog(context);
-      await Global.purchase.p.initStoreInfo([product.id], context);
-      Navigator.pop(context);
-      Global.purchase.showBuyDialog(product);
-    } catch (e) {
-      Navigator.pop(context);
-      showResultDialog(context, e.toString());
-      Future.delayed(Duration(seconds: 2), () {
-        Navigator.pop(context);
-      });
-    }
   }
 
   @override
@@ -277,7 +271,7 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
 
   Widget textWidgetBuilder1() {
     return Text(
-      headerHeight >= 60 ? 'show meaning here' : 'Pull down to add a word',
+      headerHeight >= 60 ? 'show translation here' : 'Pull down to add a word',
       style: TextStyle(
         color: Colors.grey,
         fontSize: headerHeight >= 60 ? 22 : 24,
@@ -335,7 +329,7 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
         onPointerMove: (PointerMoveEvent event) {
           final double y = event.delta.dy;
           final double x = event.delta.dx;
-          if (x.abs() > y.abs() ||
+          if (x.abs() >= y.abs() ||
               inDrag ||
               y < 0 ||
               focusNodeText.hasFocus ||
@@ -351,9 +345,11 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
         },
         onPointerUp: (PointerUpEvent event) {
           if (inPull) {
-            assetsAudioPlayer.open(
-              Audio("assets/sounds/pull.mp3"),
-            );
+            if (headerHeight > 30) {
+              assetsAudioPlayer.open(
+                Audio("assets/sounds/pull.mp3"),
+              );
+            }
           }
           inPull = false;
           if (focusNodeText.hasFocus) {

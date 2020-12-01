@@ -1,14 +1,16 @@
 import 'dart:io';
 
 import 'package:dict/common/api.dart' show getVersion;
+import 'package:dict/common/dialogs.dart';
 import 'package:dict/common/global.dart';
+import 'package:dict/i10n/localizations.dart';
 import 'package:dict/models/app_version.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:launch_review/launch_review.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:dict/widgets/dialogs/do_not_ask_again_dialog.dart';
-import 'package:dict/common/constants.dart';
+import 'package:dict/common/constants.dart' show kUpdateDialogKeyName;
 
 class UpdateApp extends StatefulWidget {
   final Widget child;
@@ -34,6 +36,7 @@ class _UpdateAppState extends State<UpdateApp> {
       AppVersion appVersion = AppVersion.fromJson(data);
       Version minAppVersion = Version.parse(appVersion.minVersion);
       Version latestAppVersion = Version.parse(appVersion.latest);
+      Global.latestVersion = appVersion.latest;
       Version currentVersion = Version.parse(Global.packageInfo.version);
       if (minAppVersion > currentVersion) {
         _showCompulsoryUpdateDialog(

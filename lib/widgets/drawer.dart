@@ -5,6 +5,7 @@ import 'package:dict/states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry/io_client.dart';
 
 class MyDrawer extends StatefulWidget {
   const MyDrawer({Key key, this.routeFunction}) : super(key: key);
@@ -90,9 +91,9 @@ class MyDrawerState extends State<MyDrawer> {
                   await Provider.of<DataSheet>(context, listen: false)
                       .remove(index);
                 } on CustomException catch (e) {
-                  var dialog = showResultDialog(context, e.toString());
+                  showResultDialog(context, e.toString());
                   Future.delayed(Duration(seconds: 2), () {
-                    Navigator.pop(context, dialog);
+                    closeDialog(context);
                     if (e.code == 4003) {
                       Navigator.pushNamed(context, 'login');
                     }

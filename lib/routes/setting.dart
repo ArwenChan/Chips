@@ -1,10 +1,16 @@
-import 'package:dict/common/api.dart' show logout, update, updateMemorized;
+import 'package:badges/badges.dart';
+import 'package:dict/common/api.dart'
+    show getProducts, logout, update, updateMemorized;
 import 'package:dict/common/dialogs.dart';
 import 'package:dict/common/exception.dart';
 import 'package:dict/common/global.dart';
+import 'package:dict/common/subscribe.dart';
 import 'package:dict/i10n/localizations.dart';
+import 'package:dict/models/product.dart';
 import 'package:dict/states.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_share/flutter_share.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:launch_review/launch_review.dart';
@@ -41,6 +47,17 @@ class SettingListState extends State<SettingList> {
   bool tranlateInplace;
   bool tranlateInplaceWithPronunciation;
   String pronunciation;
+  int fromLangIndex = 0;
+  int toLangIndex = 0;
+  List<dynamic> from;
+  List<dynamic> to;
+  List<Product> products;
+  List<dynamic> bought = [];
+
+  bool get hasBought {
+    return bought
+        .contains('${from[fromLangIndex]['code']}_${to[toLangIndex]['code']}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,42 +78,81 @@ class SettingListState extends State<SettingList> {
   List<Widget> _widgetList(BuildContext context) {
     List<Widget> widgets = [
       _item(
-        DefaultLocalizations.of(context).features,
+        DefaultLocalizations.of(context).subscribe,
         Icon(Icons.arrow_forward_ios, size: 18),
+        func: () async {
+          if (Provider.of<UserState>(context, listen: false).isLogin) {
+            showSheet();
+          } else {
+            Navigator.pushNamed(context, 'login');
+          }
+        },
+        lastItem: true,
+      ),
+      _item(
+        DefaultLocalizations.of(context).feedback,
+        Icon(Icons.arrow_forward_ios, size: 18),
+        func: () async {
+          try {
+            await feedback();
+          } catch (e) {
+            showToast(context, e.toString(), true);
+          }
+        },
       ),
       _item(
         DefaultLocalizations.of(context).review,
         Icon(Icons.arrow_forward_ios, size: 18),
         func: () {
           LaunchReview.launch(
-            // TODO: Android play store 不能使用.
             androidAppId: "com.potato.chips",
-            iOSAppId: "1532870328",
+            iOSAppId: "1532868195",
           );
         },
       ),
       _item(
-        DefaultLocalizations.of(context).feedback,
+        DefaultLocalizations.of(context).features,
         Icon(Icons.arrow_forward_ios, size: 18),
         func: () {
-          feedback();
+          Navigator.pushNamed(context, 'help');
         },
       ),
-      // TODO: 如果有更新显示一个小红点
       _item(
         DefaultLocalizations.of(context).update,
         Row(children: [
-          Text('${Global.packageInfo.version}', style: TextStyle(fontSize: 18)),
+          Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Badge(
+              badgeContent: Text(''),
+              child: Text('${Global.packageInfo.version}',
+                  style: TextStyle(fontSize: 18)),
+              toAnimate: false,
+              showBadge: Global.latestVersion != Global.packageInfo.version,
+            ),
+          ),
           Icon(Icons.arrow_forward_ios, size: 18)
         ]),
-        lastItem: true,
         func: () {
           LaunchReview.launch(
-            // TODO: Android play store 不能使用.
             writeReview: false,
             androidAppId: "com.potato.chips",
-            iOSAppId: "1532870328",
+            iOSAppId: "1532868195",
           );
+        },
+      ),
+      _item(
+        DefaultLocalizations.of(context).share,
+        Icon(Icons.arrow_forward_ios, size: 18),
+        func: () {
+          share();
+        },
+      ),
+      _item(
+        DefaultLocalizations.of(context).privacy,
+        Icon(Icons.arrow_forward_ios, size: 18),
+        lastItem: true,
+        func: () {
+          Navigator.pushNamed(context, 'privacy');
         },
       ),
       _buildBottom(context),
@@ -183,9 +239,9 @@ class SettingListState extends State<SettingList> {
                 Provider.of<UserState>(context, listen: false).user = null;
                 Navigator.pop(context);
               } on CustomException catch (e) {
-                var dialog = showResultDialog(context, e.toString());
+                showResultDialog(context, e.toString());
                 Future.delayed(Duration(seconds: 2), () {
-                  Navigator.pop(context, dialog);
+                  closeDialog(context);
                   if (e.code == 4003) {
                     Navigator.pushNamed(context, 'login');
                   }
@@ -230,7 +286,7 @@ class SettingListState extends State<SettingList> {
     );
   }
 
-  void feedback() async {
+  Future feedback() async {
     final Uri params = Uri(
       scheme: 'mailto',
       path: 'chipsfrompotato@outlook.com',
@@ -263,5 +319,121 @@ class SettingListState extends State<SettingList> {
       Global.memorized['id'] = id;
       Global.memorized['updated'] = true;
     }
+  }
+
+  Future<void> share() async {
+    await FlutterShare.share(
+      title: 'Chips',
+      text: 'Chips-极简风格词典APP',
+      linkUrl: 'https://itunes.apple.com/cn/app/id1532868195',
+    );
+  }
+
+  Future<void> showSheet() async {
+    try {
+      showLoadingDialog(context);
+      dynamic langs = await getProducts();
+      closeDialog(context);
+      from = langs['from'];
+      to = langs['to'];
+      bought = langs['bought'];
+      products = langs['products'].map<Product>((e) {
+        return Product.fromJson(e);
+      }).toList();
+    } catch (e) {
+      showToast(context, e.toString(), true);
+    }
+    List<Widget> fromList =
+        from.map<Widget>((e) => Text(e['nativeName'])).toList();
+    List<Widget> toList = to.map<Widget>((e) => Text(e['nativeName'])).toList();
+    showModalBottomSheet<void>(
+        context: context,
+        enableDrag: false,
+        backgroundColor: Colors.grey[300],
+        builder: (BuildContext context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FlatButton(
+                    child: Text(DefaultLocalizations.of(context).cancel,
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w400)),
+                    height: 40,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  FlatButton(
+                    child: hasBought
+                        ? Text(DefaultLocalizations.of(context).bought,
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w400))
+                        : Text(DefaultLocalizations.of(context).confirm,
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w400)),
+                    height: 40,
+                    onPressed: () async {
+                      if (!hasBought) {
+                        Navigator.pop(context);
+                        toBuy();
+                      }
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    height: 200,
+                    child: ListWheelScrollView(
+                      itemExtent: 40,
+                      diameterRatio: 0.8,
+                      useMagnifier: true,
+                      magnification: 1.5,
+                      squeeze: 1.0,
+                      children: fromList,
+                      onSelectedItemChanged: (int i) {
+                        setState(() {
+                          fromLangIndex = i;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    height: 200,
+                    child: ListWheelScrollView(
+                      itemExtent: 40,
+                      diameterRatio: 0.8,
+                      useMagnifier: true,
+                      magnification: 1.5,
+                      children: toList,
+                      onSelectedItemChanged: (int i) {
+                        setState(() {
+                          toLangIndex = i;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        });
+  }
+
+  void toBuy() async {
+    Product p = products.firstWhere((element) =>
+        element.langFrom == from[fromLangIndex]['code'] &&
+        element.langTo == to[toLangIndex]['code']);
+    await subscribe(p, context);
   }
 }
