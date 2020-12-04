@@ -1,8 +1,10 @@
+import 'package:dict/widgets/login/apple.dart';
 import 'package:dict/widgets/login/email.dart';
 import 'package:dict/widgets/login/qq.dart';
 import 'package:dict/widgets/login/weibo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -62,7 +64,7 @@ class SlideCard extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 150),
         child: Container(
           width: MediaQuery.of(context).size.width,
-          color: Color(0xfffafafa),
+          color: const Color(0xfffafafa),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -73,6 +75,10 @@ class SlideCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: WeiBo(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Apple(),
               ),
               FlatButton.icon(
                 onPressed: () {
@@ -85,7 +91,7 @@ class SlideCard extends StatelessWidget {
                 ),
                 color: Theme.of(context).primaryColor,
                 height: 48,
-                minWidth: 226,
+                minWidth: 235,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(5)),
                   side: BorderSide(width: 1, color: Colors.black12),

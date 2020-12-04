@@ -91,13 +91,14 @@ class _WeiBoState extends State<WeiBo> {
       icon: new Tab(
         icon: new Image.asset("assets/weibo.png", width: 30),
       ),
-      label: Text('微博登录', style: TextStyle(fontSize: 18)),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-        side: BorderSide(width: 1, color: Colors.black54),
+      color: Colors.white,
+      label: const Text('微博登录', style: TextStyle(fontSize: 18)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+        side: const BorderSide(width: 1, color: Colors.black54),
       ),
       height: 48,
-      minWidth: 226,
+      minWidth: 235,
       onPressed: () {
         _weibo.auth(
           appKey: _WEIBO_APP_KEY,

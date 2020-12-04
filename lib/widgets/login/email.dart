@@ -173,7 +173,7 @@ class _EmailState extends State<Email> {
                 String email = _nameController.text.trim();
                 try {
                   await forgetpsw(email);
-                  showResultDialog(context, '请在邮箱中完成', isError: false);
+                  showResultDialog(context, '相关邮件已发送', isError: false);
                   Future.delayed(Duration(seconds: 2), () {
                     closeDialog(context);
                   });

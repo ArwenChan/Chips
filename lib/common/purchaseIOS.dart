@@ -1,10 +1,34 @@
 import 'dart:async';
-import 'package:dict/common/api.dart';
+import 'package:dict/common/api.dart' show restoreAPI, verifyPurchase;
 import 'package:dict/common/dialogs.dart';
 import 'package:dict/common/exception.dart';
 import 'package:dict/common/global.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase/store_kit_wrappers.dart';
+
+class TransactionObserver extends SKTransactionObserverWrapper {
+  paymentQueueRestoreCompletedTransactionsFinished() {
+    debugPrint('restore part finish transaction');
+  }
+
+  removedTransactions({List<SKPaymentTransactionWrapper> transactions}) {}
+  restoreCompletedTransactionsFailed({SKError error}) {
+    debugPrint('restore part error: $error');
+  }
+
+  shouldAddStorePayment({SKPaymentWrapper payment, SKProductWrapper product}) {
+    // 是否接受 app store 购买, 实际上现在没有入口
+    return true;
+  }
+
+  updatedTransactions({List<SKPaymentTransactionWrapper> transactions}) {
+    transactions.forEach((SKPaymentTransactionWrapper transaction) async {
+      debugPrint('----restore part listen----');
+      Global.purchase.p.restoreTransaction(transaction);
+    });
+  }
+}
 
 class PurchaseIOS {
   final InAppPurchaseConnection _connection = InAppPurchaseConnection.instance;
@@ -12,6 +36,7 @@ class PurchaseIOS {
   BuildContext context;
   List<ProductDetails> _products = [];
   List<PurchaseDetails> _purchases = [];
+  SKPaymentQueueWrapper skPaymentQueueWrapper = SKPaymentQueueWrapper();
 
   void init() {
     Stream purchaseUpdated =
@@ -19,13 +44,15 @@ class PurchaseIOS {
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
       _listenToPurchaseUpdated(purchaseDetailsList);
     }, onDone: () {
-      debugPrint('on done');
+      debugPrint('on purchase update done');
       _subscription.cancel();
     }, onError: (error) {
-      debugPrint('on error');
+      debugPrint('on purchase update error');
       debugPrint(error.toString());
       _subscription.cancel();
     });
+    TransactionObserver observer = TransactionObserver();
+    skPaymentQueueWrapper.setTransactionObserver(observer);
   }
 
   Future<void> initStoreInfo(productIDs, context) async {
@@ -183,5 +210,41 @@ class PurchaseIOS {
         showAppleDialog(context, '有未完成的购买，您可以重启应用再继续或重新购买。');
       }
     });
+  }
+
+  void restore(BuildContext context) {
+    debugPrint('---restore---');
+    this.context = context;
+    showLoadingDialog(context);
+    skPaymentQueueWrapper.restoreTransactions(
+        applicationUserName: Global.profile.user.username);
+  }
+
+  Future<void> restoreTransaction(
+      SKPaymentTransactionWrapper transaction) async {
+    try {
+      if (transaction.transactionState ==
+          SKPaymentTransactionStateWrapper.restored) {
+        await restoreAPI(transaction.originalTransaction.transactionIdentifier);
+        if (context != null) {
+          closeDialog(context);
+        }
+      }
+    } on CustomException catch (e) {
+      if (context != null) {
+        closeDialog(context);
+        showResultDialog(context, e.toString());
+        Future.delayed(Duration(seconds: 2), () {
+          closeDialog(context);
+        });
+      }
+    } catch (e) {
+      if (context != null) {
+        closeDialog(context);
+        showToast(context, e.toString(), true);
+      }
+    } finally {
+      SKPaymentQueueWrapper().finishTransaction(transaction);
+    }
   }
 }

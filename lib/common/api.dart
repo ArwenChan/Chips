@@ -293,3 +293,13 @@ Future<dynamic> getProducts() async {
   errorHandle(response);
   return response.data;
 }
+
+Future<void> restoreAPI(String transactionIdentifier) async {
+  if (Global.profile.user == null) {
+    throw AuthException('No auth', 400);
+  }
+  dio.options.headers['Authorization'] = 'Bearer ${Global.profile.user.token}';
+  Response response = await dio.post('/purchase/restore',
+      data: {'transactionIdentifier': transactionIdentifier});
+  errorHandle(response);
+}

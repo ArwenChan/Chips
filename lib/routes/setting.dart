@@ -87,6 +87,17 @@ class SettingListState extends State<SettingList> {
             Navigator.pushNamed(context, 'login');
           }
         },
+      ),
+      _item(
+        DefaultLocalizations.of(context).restorePurchased,
+        Icon(Icons.arrow_forward_ios, size: 18),
+        func: () async {
+          if (Provider.of<UserState>(context, listen: false).isLogin) {
+            Global.purchase.p.restore(context);
+          } else {
+            Navigator.pushNamed(context, 'login');
+          }
+        },
         lastItem: true,
       ),
       _item(

@@ -164,6 +164,15 @@ class DefaultLocalizations {
     }
   }
 
+  String get restorePurchased {
+    switch (lang) {
+      case 'zh_CN':
+        return '恢复订阅';
+      default:
+        return 'Restore Purchases';
+    }
+  }
+
   String get confirm {
     switch (lang) {
       case 'zh_CN':
