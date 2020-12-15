@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:country_codes/country_codes.dart';
 import 'package:dict/common/purchase.dart';
 import 'package:dict/models/list.dart';
 import 'package:dict/common/api.dart' show fromLocal;
@@ -26,6 +27,7 @@ class Global {
   static Purchase purchase;
   static int inDialog = 0;
   static String latestVersion;
+  static String countryCode = 'CN';
   // static bool canListenCopy = false;
 
   static bool isRelease = bool.fromEnvironment("dart.vm.product");
@@ -54,6 +56,12 @@ class Global {
         );
       }
       getUniqueId();
+    });
+    CountryCodes.init().then((bool success) {
+      if (success) {
+        final Locale deviceLocale = CountryCodes.getDeviceLocale();
+        countryCode = deviceLocale.countryCode;
+      }
     });
     var data = await fromLocal();
     words = data['words'];

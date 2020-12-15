@@ -3,8 +3,8 @@ import 'dart:io';
 // import 'package:dict/common/purchaseAndroid.dart';
 import 'package:dict/common/purchaseIOS.dart';
 import 'package:dict/i10n/localizations.dart';
-import 'package:dict/models/product.dart';
 import 'package:flutter/material.dart';
+import 'package:in_app_purchase/in_app_purchase.dart' show ProductDetails;
 
 class Purchase {
   dynamic p;
@@ -16,7 +16,7 @@ class Purchase {
       // p = PurchaseAndroid();
     }
   }
-  Future<void> showBuyDialog(Product product) async {
+  Future<void> showBuyDialog(ProductDetails product) async {
     await showDialog(
       context: p.context,
       barrierDismissible: false,
@@ -28,14 +28,14 @@ class Purchase {
                 insetPadding: EdgeInsets.zero,
                 contentPadding: EdgeInsets.fromLTRB(30, 20, 30, 0),
                 title: Text(
-                    '${DefaultLocalizations.of(context).subscribe}【${product.name}】',
+                    '${DefaultLocalizations.of(context).subscribe}【${product.title}】',
                     textAlign: TextAlign.center),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Text(
-                      'ONLY ￥${(product.promotionPrice ?? product.price / 100.0).toStringAsFixed(2)}  永久有效',
+                      'ONLY ${product.price}  ${DefaultLocalizations.of(context).permanent}',
                       style: TextStyle(fontWeight: FontWeight.w300),
                     ),
                     Container(

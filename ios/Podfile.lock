@@ -3,6 +3,8 @@ PODS:
     - Flutter
   - assets_audio_player_web (0.0.1):
     - Flutter
+  - country_codes (0.0.1):
+    - Flutter
   - device_info (0.0.1):
     - Flutter
   - Flutter (1.0.0)
@@ -40,6 +42,7 @@ PODS:
 DEPENDENCIES:
   - assets_audio_player (from `.symlinks/plugins/assets_audio_player/ios`)
   - assets_audio_player_web (from `.symlinks/plugins/assets_audio_player_web/ios`)
+  - country_codes (from `.symlinks/plugins/country_codes/ios`)
   - device_info (from `.symlinks/plugins/device_info/ios`)
   - Flutter (from `Flutter`)
   - flutter_share (from `.symlinks/plugins/flutter_share/ios`)
@@ -63,6 +66,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/assets_audio_player/ios"
   assets_audio_player_web:
     :path: ".symlinks/plugins/assets_audio_player_web/ios"
+  country_codes:
+    :path: ".symlinks/plugins/country_codes/ios"
   device_info:
     :path: ".symlinks/plugins/device_info/ios"
   Flutter:
@@ -93,6 +98,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   assets_audio_player: edee322b9cb625571b830b35872ead1a295fd917
   assets_audio_player_web: 19826380c44375761aa0b9053665c1e3fbc3b86b
+  country_codes: b0900f46ad686281d5dab438e354e44ad10f5941
   device_info: d7d233b645a32c40dfdc212de5cf646ca482f175
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_share: 4be0208963c60b537e6255ed2ce1faae61cd9ac2

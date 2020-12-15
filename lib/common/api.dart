@@ -123,7 +123,6 @@ Future removeList(String id) async {
     '/list/remove',
     queryParameters: {'id': id},
   );
-  debugPrint(response.data.toString());
   errorHandle(response);
 }
 
@@ -131,6 +130,7 @@ Future<Word> query(String word) async {
   if (Global.profile.user != null) {
     dio.options.headers['Authorization'] =
         'Bearer ${Global.profile.user.token}';
+    dio.options.headers['country'] = Global.countryCode;
   }
   Response response = await dio.get(
     '/query/entozh',
@@ -248,7 +248,7 @@ Future<int> verifyPurchase(String receipt) async {
     throw AuthException('No auth', 400);
   }
   dio.options.headers['Authorization'] = 'Bearer ${Global.profile.user.token}';
-  dio.options.connectTimeout = 10000;
+  dio.options.connectTimeout = 15000;
   Response response = await dio.post(
     '/purchase/verify',
     data: {
@@ -294,12 +294,12 @@ Future<dynamic> getProducts() async {
   return response.data;
 }
 
-Future<void> restoreAPI(String transactionIdentifier) async {
+Future<void> restoreAPI(List<String> transactionIdentifiers) async {
   if (Global.profile.user == null) {
     throw AuthException('No auth', 400);
   }
   dio.options.headers['Authorization'] = 'Bearer ${Global.profile.user.token}';
   Response response = await dio.post('/purchase/restore',
-      data: {'transactionIdentifier': transactionIdentifier});
+      data: {'transactionIdentifiers': transactionIdentifiers});
   errorHandle(response);
 }

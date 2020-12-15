@@ -23,9 +23,15 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(Provider.of<DataSheet>(context).title),
-      ),
+      appBar:
+          AppBar(title: Text(Provider.of<DataSheet>(context).title), actions: [
+        IconButton(
+          icon: Icon(Icons.help_outline),
+          onPressed: () {
+            Navigator.pushNamed(context, 'help');
+          },
+        )
+      ]),
       body: HomeList(),
       drawer: DrawerCotainer(),
     );

@@ -208,6 +208,15 @@ class DefaultLocalizations {
         return 'Internet connection lost';
     }
   }
+
+  String get permanent {
+    switch (lang) {
+      case 'zh_CN':
+        return '永久有效';
+      default:
+        return 'Never Expires';
+    }
+  }
 }
 
 class DefaultLocalizationsDelegate

@@ -5,30 +5,6 @@ import 'package:dict/common/exception.dart';
 import 'package:dict/common/global.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:in_app_purchase/store_kit_wrappers.dart';
-
-class TransactionObserver extends SKTransactionObserverWrapper {
-  paymentQueueRestoreCompletedTransactionsFinished() {
-    debugPrint('restore part finish transaction');
-  }
-
-  removedTransactions({List<SKPaymentTransactionWrapper> transactions}) {}
-  restoreCompletedTransactionsFailed({SKError error}) {
-    debugPrint('restore part error: $error');
-  }
-
-  shouldAddStorePayment({SKPaymentWrapper payment, SKProductWrapper product}) {
-    // 是否接受 app store 购买, 实际上现在没有入口
-    return true;
-  }
-
-  updatedTransactions({List<SKPaymentTransactionWrapper> transactions}) {
-    transactions.forEach((SKPaymentTransactionWrapper transaction) async {
-      debugPrint('----restore part listen----');
-      Global.purchase.p.restoreTransaction(transaction);
-    });
-  }
-}
 
 class PurchaseIOS {
   final InAppPurchaseConnection _connection = InAppPurchaseConnection.instance;
@@ -36,9 +12,12 @@ class PurchaseIOS {
   BuildContext context;
   List<ProductDetails> _products = [];
   List<PurchaseDetails> _purchases = [];
-  SKPaymentQueueWrapper skPaymentQueueWrapper = SKPaymentQueueWrapper();
 
   void init() {
+    purchaseListen();
+  }
+
+  void purchaseListen() {
     Stream purchaseUpdated =
         InAppPurchaseConnection.instance.purchaseUpdatedStream;
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
@@ -51,8 +30,6 @@ class PurchaseIOS {
       debugPrint(error.toString());
       _subscription.cancel();
     });
-    TransactionObserver observer = TransactionObserver();
-    skPaymentQueueWrapper.setTransactionObserver(observer);
   }
 
   Future<void> initStoreInfo(productIDs, context) async {
@@ -73,18 +50,7 @@ class PurchaseIOS {
     }
 
     _products = productDetailResponse.productDetails;
-    final QueryPurchaseDetailsResponse purchaseResponse = await _connection
-        .queryPastPurchases(applicationUserName: Global.profile.user.username);
-    if (purchaseResponse.error != null) {
-      debugPrint(purchaseResponse.error.message);
-      throw CustomException('获取交易记录失败', 1000);
-    }
-    for (PurchaseDetails purchase in purchaseResponse.pastPurchases) {
-      if (purchase.pendingCompletePurchase) {
-        InAppPurchaseConnection.instance.completePurchase(purchase);
-      }
-      _purchases.add(purchase);
-    }
+    return _products[0];
   }
 
   void handleError(IAPError error) {
@@ -212,39 +178,46 @@ class PurchaseIOS {
     });
   }
 
-  void restore(BuildContext context) {
-    debugPrint('---restore---');
-    this.context = context;
+  void restore(BuildContext ctx) async {
+    this.context = ctx;
     showLoadingDialog(context);
-    skPaymentQueueWrapper.restoreTransactions(
-        applicationUserName: Global.profile.user.username);
-  }
-
-  Future<void> restoreTransaction(
-      SKPaymentTransactionWrapper transaction) async {
     try {
-      if (transaction.transactionState ==
-          SKPaymentTransactionStateWrapper.restored) {
-        await restoreAPI(transaction.originalTransaction.transactionIdentifier);
-        if (context != null) {
-          closeDialog(context);
-        }
+      final QueryPurchaseDetailsResponse purchaseResponse =
+          await _connection.queryPastPurchases(
+              applicationUserName: Global.profile.user.username);
+      if (purchaseResponse.error != null) {
+        debugPrint(purchaseResponse.error.message);
+        throw CustomException('获取交易记录失败', 1000);
       }
+      _purchases = purchaseResponse.pastPurchases;
+      if (_purchases.isEmpty) {
+        throw CustomException('没有交易可恢复', 1000);
+      } else {
+        List<String> transactionIdentifiers = _purchases
+            .map<String>((e) => e
+                .skPaymentTransaction.originalTransaction.transactionIdentifier)
+            .toList();
+        debugPrint(transactionIdentifiers.toString());
+        await restoreAPI(transactionIdentifiers);
+      }
+      closeDialog(context);
+      showResultDialog(context, '恢复交易成功');
+      Future.delayed(Duration(seconds: 2), () {
+        closeDialog(context);
+      });
     } on CustomException catch (e) {
-      if (context != null) {
+      closeDialog(context);
+      showResultDialog(context, e.toString());
+      Future.delayed(Duration(seconds: 2), () {
         closeDialog(context);
-        showResultDialog(context, e.toString());
-        Future.delayed(Duration(seconds: 2), () {
-          closeDialog(context);
-        });
-      }
+      });
     } catch (e) {
-      if (context != null) {
-        closeDialog(context);
-        showToast(context, e.toString(), true);
-      }
+      closeDialog(context);
+      showToast(context, e.toString(), true);
     } finally {
-      SKPaymentQueueWrapper().finishTransaction(transaction);
+      _purchases.forEach((element) {
+        _connection.completePurchase(element);
+      });
     }
   }
 }
