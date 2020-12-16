@@ -228,7 +228,7 @@ class HomeListState extends State<HomeList> with WidgetsBindingObserver {
       }
       if (e.code == 4002) {
         final Product product = Product.fromJson(jsonDecode(e.detail));
-        subscribe(product, context);
+        subscribe(product.id, context);
       } else if (e.code == 4003) {
         Navigator.pushNamed(context, 'login');
       } else {

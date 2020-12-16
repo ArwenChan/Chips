@@ -28,7 +28,7 @@ class Purchase {
                 insetPadding: EdgeInsets.zero,
                 contentPadding: EdgeInsets.fromLTRB(30, 20, 30, 0),
                 title: Text(
-                    '${DefaultLocalizations.of(context).subscribe}【${product.title}】',
+                    '${DefaultLocalizations.of(context).subscribe}【${product.title.replaceAll('#', '')}】',
                     textAlign: TextAlign.center),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,

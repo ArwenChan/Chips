@@ -441,9 +441,11 @@ class SettingListState extends State<SettingList> {
   }
 
   void toBuy() async {
-    Product p = products.firstWhere((element) =>
-        element.langFrom == from[fromLangIndex]['code'] &&
-        element.langTo == to[toLangIndex]['code']);
-    await subscribe(p, context);
+    String pId = '${from[fromLangIndex]['code']}_${to[toLangIndex]['code']}'
+        .replaceAll('-', '_');
+    if (Global.countryCode != 'CN') {
+      pId = pId + '_abroad';
+    }
+    await subscribe(pId, context);
   }
 }
